@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
 import asyncio
 from gliner import GLiNER
 from app.hn_searcher import HNSearcher
@@ -13,6 +14,9 @@ labels = [
     "Education",
     "Skills",
 ]
+
+# Gzip compression middleware
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 @app.get("/")

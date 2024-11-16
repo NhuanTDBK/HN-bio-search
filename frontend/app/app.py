@@ -1,8 +1,14 @@
+import json
 import os
+import gzip
 import gradio as gr
 import requests
 import pandas as pd
 from typing import Tuple
+
+
+client_session = requests.Session()
+client_session.keep_alive = 5
 
 
 def search_stories(query: str, page: int) -> Tuple[pd.DataFrame, int]:
@@ -10,15 +16,18 @@ def search_stories(query: str, page: int) -> Tuple[pd.DataFrame, int]:
     Search stories from local API and return results as DataFrame
     """
     try:
-        response = requests.post(
+        response = client_session.post(
             url=os.environ.get("API_URL", "http://50.18.255.74:8600/search"),
             json={"query": query, "page": page},
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "Accept-Encoding": "gzip",
+            },
         )
         response.raise_for_status()
-
+        data = response.content
+        data = json.loads(data)["hits"]
         # Convert response data to DataFrame
-        data = response.json()["hits"]
         df = pd.DataFrame(data)
 
         # Reorder columns for better display
